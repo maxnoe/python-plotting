@@ -1,0 +1,13 @@
+backend		: QT4Agg
+font.family	: serif
+font.serif		: Computer Modern Roman
+font.sans-serif		: Computer Modern Sans serif
+font.cursive		: Zapf Chancery
+font.monospace		: Computer Modern Typewriter
+font.size           : 11
+
+text.usetex		: true
+text.latex.unicode	: true
+text.latex.preamble : \usepackage[locale=DE]{siunitx} \usepackage{upgreek}
+legend.fontsize: 11
+
