@@ -13,5 +13,6 @@ text.latex.preamble : \usepackage[locale=DE]{siunitx} \usepackage{upgreek}
 
 legend.fontsize     : 11
 
-figure.figsize      : 15/2.54, 10/2.54
+# figsize of 15cm * 10cm (values have to be given in inch)
+figure.figsize      : 5.906, 3.937
 savefig.dpi         : 300
