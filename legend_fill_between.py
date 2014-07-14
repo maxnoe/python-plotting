@@ -50,4 +50,4 @@ ax.set_ylim(-1.1, 1.1)
 
 # always call tight_layout before saving ;)
 fig.tight_layout()
-fig.savefig("legend_fill_between.pdf", dpi=300)
+fig.savefig("legend_fill_between.png", dpi=300)
