@@ -17,6 +17,8 @@ x = np.linspace(0, 2*np.pi, 1000)
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
 
+ax.set_title(r"Legend for $1\sigma$-Area")
+
 
 # the plot-command returns a list of the drawn lines
 plot_sin = ax.plot(x, np.sin(x), 'b-')

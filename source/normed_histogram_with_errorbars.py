@@ -15,6 +15,7 @@ data2 = np.random.normal(4,1, 5000)
 
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
+ax.set_title(r"Normed Histograms with Errorbars")
 
 # variables for number of bins and the limits
 
