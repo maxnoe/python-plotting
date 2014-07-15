@@ -1,7 +1,7 @@
 python-plotting
 ===============
 
-A nice little collection of some matplotlib features
+A nice little collection of some matplotlib plots I created.
 
 ## function to create LaTeX-labels with multiples of Pi
 [Source code](source/create_pi_labels.py "source code")
