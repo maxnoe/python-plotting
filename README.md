@@ -8,7 +8,7 @@ A nice little collection of some matplotlib plots I created.
 [Source code](source/circular_membrane.py "source code")
 Click on image for YouTube video:
 
-[![Foo](http://img.youtube.com/vi/PEWSt8dvpjo/0.jpg)](http://youtu.be/PEWSt8dvpjo)
+[![Foo](http://img.youtube.com/vi/asr7QfLksGo/0.jpg)](http://youtu.be/asr7QfLksGo)
 
 
 ### function to create LaTeX-labels with multiples of Pi
