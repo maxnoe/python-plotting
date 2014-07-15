@@ -4,8 +4,9 @@ import numpy as np
 from fractions import Fraction
 
 def create_pi_labels(a, b, step):
-    values = np.arange(a, b+step/10, step)
+    values = np.arange(a, b+0.1*step, step)
     fracs = [Fraction(x) for x in values]
+    ticks = values*np.pi
 
     labels = []
 
@@ -27,7 +28,7 @@ def create_pi_labels(a, b, step):
             else:
                 labels.append(r"$\frac{{{}}}{{{}}} \pi$".format(frac.numerator, frac.denominator))
 
-    return labels
+    return ticks, labels
 
 x = np.linspace(-np.pi, 2*np.pi, 1000)
 
@@ -46,9 +47,9 @@ ax.set_xlabel(r"$x$")
 ax.set_ylabel(r"$f(x)$")
 
 
-ax.set_xticks(np.arange(-np.pi, 2*np.pi+0.1, 0.5*np.pi))
 
-labels = create_pi_labels(-1, 2, 0.5)
+ticks, labels = create_pi_labels(-1, 2, 0.5)
+ax.set_xticks(ticks)
 ax.set_xticklabels(labels)
 
 ax.legend(loc="best")
