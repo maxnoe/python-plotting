@@ -1,7 +1,6 @@
 python-plotting
 ===============
 
-YT("ArHQjQyIS70", width = 640, height = 360, print = TRUE)
 
 A nice little collection of some matplotlib plots I created.
 
