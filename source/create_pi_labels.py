@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from fractions import Fraction
 
-def create_pi_labels(a, b, step):
+def create_pi_labels(a=0, b=2, step=0.5):
     values = np.arange(a, b+0.1*step, step)
     fracs = [Fraction(x) for x in values]
     ticks = values*np.pi
