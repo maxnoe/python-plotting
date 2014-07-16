@@ -4,8 +4,9 @@ import numpy as np
 from fractions import Fraction
 
 def create_pi_labels(a=0, b=2, step=0.5):
+    max_denominator = int(1/step)
     values = np.arange(a, b+0.1*step, step)
-    fracs = [Fraction(x) for x in values]
+    fracs = [Fraction(x).limit_denominator(max_denominator) for x in values]
     ticks = values*np.pi
 
     labels = []
@@ -48,7 +49,7 @@ ax.set_ylabel(r"$f(x)$")
 
 
 
-ticks, labels = create_pi_labels(-1, 2, 0.5)
+ticks, labels = create_pi_labels(-1, 2, 1/3)
 ax.set_xticks(ticks)
 ax.set_xticklabels(labels)
 
