@@ -1,38 +1,85 @@
-# -*- coding: utf-8 -*-
-# I'm using python2 because of a python3 bug under arch linux while saving the
-# animation
-from __future__ import unicode_literals, print_function, division
 import matplotlib.pyplot as plt
-import matplotlib.animation as ani
+from matplotlib.animation import FuncAnimation
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
-from mpl_toolkits.mplot3d.axes3d import Axes3D
-# get bessel functions and roots of the bessel functions
-from scipy.special import jn, jn_zeros
+from scipy.special import jv, jn_zeros
+
+RADIUS = 1
+SPEED_OF_SOUND = 0.75
+BESSEL_ROOTS = [jn_zeros(m, 10) for m in range(10)]
+FPS = 25
+TIME_PER_MODE = 10
+
+MODES = (
+    (0, 1),
+    (0, 2),
+    (0, 3),
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (2, 1),
+    (2, 2),
+    (2, 3)
+)
+
+FRAMES = len(MODES) * TIME_PER_MODE * FPS
 
 
-fig = plt.figure(figsize=(12.8, 7.2))
-ax = fig.add_subplot(1,1,1, projection='3d')
+def lambda_mn(m, n, radius):
+    return BESSEL_ROOTS[m][n - 1] / radius
 
-radius = 2
 
-r, phi = np.meshgrid(np.linspace(0, radius, 50), np.linspace(0, 2*np.pi, 52))
+def circular_membrane(r, theta, t, m, n, radius, speed_of_sound):
+    l = lambda_mn(m, n, radius)
 
-x, y = r*np.cos(phi), r*np.sin(phi)
+    T = np.sin(speed_of_sound * l * t)
+    R = jv(m, l * r)
+    Theta = np.cos(m * theta)
 
-bessel_roots=np.array([jn_zeros(0,5), jn_zeros(1,5),jn_zeros(2,5),jn_zeros(3,5)])
+    return R * T * Theta
 
-def animation(t):
-    step = int(t/np.pi)
 
-    l = (step//12)
-    m = (step//4)%3
+r = np.linspace(0, RADIUS, 100)
+theta = np.linspace(0, 2 * np.pi, 100)
 
-    z = jn(m,bessel_roots[m,l]*r/radius)*np.cos(m*phi)*np.sin(t)
+r, theta = np.meshgrid(r, theta)
+x = np.cos(theta) * r
+y = np.sin(theta) * r
+
+fig = plt.figure(figsize=(19.2, 10.8), dpi=100)
+ax = fig.add_axes([0, 0, 1, 1], projection='3d')
+ax.set_axis_off()
+
+
+def update(i):
+    print(f'{i / FRAMES:.2%}', end='\r')
+    t = i / FPS
+    m, n = MODES[int(t // TIME_PER_MODE)]
+
     ax.cla()
-    plot = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap="jet",
-                           vmin=-1, vmax=1, label="test", linewidth=0)
-    ax.set_zlim(-1.1,1.1)
-    ax.set_title("circular membrane: l={}, m={}-Mode".format(l+1,m))
+    ax.set_axis_off()
+    z = circular_membrane(r, theta, t, m, n, RADIUS, SPEED_OF_SOUND)
+    vmax = np.max(jv(m, np.linspace(0, BESSEL_ROOTS[m][n], 100)))
+    ax.plot_surface(
+        x,
+        y,
+        z,
+        linewidth=0,
+        cmap='Spectral',
+        vmin=-vmax,
+        vmax=vmax,
+        rcount=100,
+        ccount=100,
+    )
+    ax.set_zlim(-1.1, 1.1)
+    ax.set_xlim(-0.75, 0.75)
+    ax.set_ylim(-0.75, 0.75)
+    omega = SPEED_OF_SOUND * lambda_mn(m, n, RADIUS)
+    ax.set_title(
+        f'Circular membrane, m = {m}, n = {n}, ω={omega:.2f}',
+        size=36, weight='bold', family='Fira Sans',
+    )
 
-anim = ani.FuncAnimation(fig, animation, np.linspace(0, 36*np.pi, 1800))
-anim.save('circular_membrane.mp4', dpi=100, bitrate=16384, fps=25)
+
+ani = FuncAnimation(fig, update, frames=FRAMES, interval=1000/FPS, repeat=False)
+ani.save(f'membrane.mp4', writer='ffmpeg')
