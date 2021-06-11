@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from scipy.special import jv, jn_zeros
+from tqdm.auto import tqdm
+from functools import lru_cache
 
 RADIUS = 1
 SPEED_OF_SOUND = 0.75
@@ -25,8 +26,15 @@ MODES = (
 FRAMES = len(MODES) * TIME_PER_MODE * FPS
 
 
+@lru_cache()
 def lambda_mn(m, n, radius):
     return BESSEL_ROOTS[m][n - 1] / radius
+
+
+@lru_cache()
+def get_vmin_vmax(m, n):
+    vmax = np.max(jv(m, np.linspace(0, BESSEL_ROOTS[m][n], 100)))
+    return -vmax, vmax
 
 
 def circular_membrane(r, theta, t, m, n, radius, speed_of_sound):
@@ -42,31 +50,62 @@ def circular_membrane(r, theta, t, m, n, radius, speed_of_sound):
 r = np.linspace(0, RADIUS, 100)
 theta = np.linspace(0, 2 * np.pi, 100)
 
+m, n = MODES[0]
 r, theta = np.meshgrid(r, theta)
 x = np.cos(theta) * r
 y = np.sin(theta) * r
+z = circular_membrane(r, theta, 0, m, n, RADIUS, SPEED_OF_SOUND)
+vmin, vmax = get_vmin_vmax(m, n)
 
 fig = plt.figure(figsize=(19.2, 10.8), dpi=100)
 ax = fig.add_axes([0, 0, 1, 1], projection='3d')
 ax.set_axis_off()
+plot = ax.plot_surface(
+    x,
+    y,
+    z,
+    linewidth=0,
+    cmap='Spectral',
+    vmin=vmin,
+    vmax=vmax,
+    rcount=100,
+    ccount=100,
+)
+
+omega = SPEED_OF_SOUND * lambda_mn(m, n, RADIUS)
+text = ax.text2D(
+    0.5, 0.95,
+    f'Circular membrane, m = {m}, n = {n}, ω={omega:.2f}',
+    size=36, weight='bold', family='Fira Sans',
+    va='top', ha='center',
+    transform=ax.transAxes,
+)
 
 
-def update(i):
-    print(f'{i / FRAMES:.2%}', end='\r')
+def init():
+    pass
+
+
+def update(i, bar=None):
+    global plot
+
+    if bar is not None:
+        bar.update()
+
     t = i / FPS
     m, n = MODES[int(t // TIME_PER_MODE)]
 
-    ax.cla()
-    ax.set_axis_off()
     z = circular_membrane(r, theta, t, m, n, RADIUS, SPEED_OF_SOUND)
-    vmax = np.max(jv(m, np.linspace(0, BESSEL_ROOTS[m][n], 100)))
-    ax.plot_surface(
+
+    vmin, vmax = get_vmin_vmax(m, n)
+    plot.remove()
+    plot = ax.plot_surface(
         x,
         y,
         z,
         linewidth=0,
         cmap='Spectral',
-        vmin=-vmax,
+        vmin=vmin,
         vmax=vmax,
         rcount=100,
         ccount=100,
@@ -75,11 +114,13 @@ def update(i):
     ax.set_xlim(-0.75, 0.75)
     ax.set_ylim(-0.75, 0.75)
     omega = SPEED_OF_SOUND * lambda_mn(m, n, RADIUS)
-    ax.set_title(
-        f'Circular membrane, m = {m}, n = {n}, ω={omega:.2f}',
-        size=36, weight='bold', family='Fira Sans',
-    )
+    text.set_text(f'Circular membrane, m = {m}, n = {n}, ω={omega:.2f}')
 
 
-ani = FuncAnimation(fig, update, frames=FRAMES, interval=1000/FPS, repeat=False)
-ani.save(f'membrane.mp4', writer='ffmpeg')
+bar = tqdm(total=FRAMES)
+ani = FuncAnimation(fig, update, init_func=init, frames=FRAMES, interval=1000/FPS, repeat=False, fargs=(bar, ))
+ani.save(
+    f'membrane.mp4',
+    writer='ffmpeg',
+    extra_args=['-vcodec', 'libx264', '-preset', 'slower', "-pix_fmt", "yuv420p", "-crf", "24", "-threads", "0", "-bf", "0"]
+)
